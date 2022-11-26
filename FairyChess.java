@@ -8,7 +8,7 @@ import java.util.regex.*;
  * The driver class for the Fairy Chess project.
  */
 public class FairyChess {
-
+    // Shevi is a dumb dumb
     public static String[] movefile;
     public static char[][] board;
     public static boolean playerTurn = true;
