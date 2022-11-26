@@ -11,15 +11,16 @@ public class Move {
     public int dfile;
     public int drank;
 
+    //I have two Move constructors. They are distinguished by the input variables. MAybe I should give them different names after all?
     public Move(String line) {
         this.Affect = typeOfAffect(line);
         this.Move = typeOfMove(line);
         this.Promote = typeOfPromote(line);
         this.Check = Check(line);
-        this.srank = srank(line);
-        this.sfile = sfile(line);
-        this.drank = drank(line);
-        this.dfile = dfile(line);
+        this.srank = sourceRank(line);
+        this.sfile = sourceFile(line);
+        this.drank = destinationRank(line);
+        this.dfile = destinationFile(line);
     }
      public Move(String Move, int srank, int sfile, int drank, int dfile){
          this.Affect = "";
@@ -106,7 +107,7 @@ public class Move {
 
     }
 
-    public static int sfile(String line) {
+    public static int sourceFile(String line) {
         if (!line.contains("0-0")) {
             int sfile = 0;
             char x = line.charAt(0);
@@ -151,7 +152,7 @@ public class Move {
 
     }
 
-    public static int srank(String line) {
+    public static int sourceRank(String line) {
         if (!line.contains("0-0")) {
             int srank = 0;
             String x = "";
@@ -201,7 +202,7 @@ public class Move {
         }
     }
 
-    public static int dfile(String line) {
+    public static int destinationFile(String line) {
         if (!line.contains("0-0")) {
             int dfile = 0;
             int index = 0;
@@ -251,7 +252,7 @@ public class Move {
 
     }
 
-    public static int drank(String line) {
+    public static int destinationRank(String line) {
         if (!line.contains("0-0")) {
             int drank = 0;
             int upper = 0;
