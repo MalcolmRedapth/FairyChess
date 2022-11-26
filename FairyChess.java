@@ -2,13 +2,12 @@ import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.util.regex.*;
 
 /**
  * The driver class for the Fairy Chess project.
  */
 public class FairyChess {
-
+	// Allocate memory for the global variables
     public static String[] movefile;
     public static char[][] board;
     public static boolean playerTurn = true;
@@ -24,6 +23,7 @@ public class FairyChess {
     public static int movedfile = 0;
 
     public static void main(String[] args) {
+    	// A Whole bunch of variables
         int lines = 0;
         int mlines = 0;
         int count = 0;
@@ -32,17 +32,15 @@ public class FairyChess {
         int file = 0;
         int rank = 0;
         boolean show = true;
-        boolean allocation = true;
-
-        // A Whole bunch of variables
+        boolean isNotAllocatedYet = true;
+        
         int[] blackPieces = new int[11];
         int[] whitePieces = new int[11];
-
-        // need to make the board size dynamic for invalid board sizes
-
-        // Get the board file's name, and initialize a File object to represent
-        // it
-
+        // The Following code is used to read in and verify save files, it is rather complicated due
+        // to the marking methods used in this project. Feel free to skip to line 129 (Where the game actually
+        // start and the grading code stops)
+        
+        // Get the board file's name, and initialize a File object to represent it
         if (args.length > 0) {
             String boardFilename = args[0];
             File boardFile = new File(boardFilename);
@@ -105,7 +103,6 @@ public class FairyChess {
             BoardValidation.checkElephantPosition(board, blackPieces);
             BoardValidation.checkIllegalPiece(boardfile, blackPieces);
             BoardValidation.checkBoardDimensions(board);
-            // gotta check this one first
 
             BoardValidation.checkPawnExceedingAllocation(boardfile, blackPieces);
             BoardValidation.checkDynamicExcedeingOfficerAllocation(boardfile, blackPieces);
@@ -114,6 +111,7 @@ public class FairyChess {
             Piece[][] piecesBoard = PiecesBoard.PiecesBoard(board);
         }
         // Bla Bla Bla Bla this is the next stage
+        // here we read in move commands and later affect them onto the game from the save file (args[0])
         if (args.length > 1) {
             String moveFilename = args[1];
             File moveFile = new File(moveFilename);
@@ -132,6 +130,9 @@ public class FairyChess {
             boardScannerNext.close();
 
             movefile = makeString(moveFile, mlines);
+            
+            // I don't know why I commented this out. Maybe it was needed during grading
+            
             // Move[] moves = Move.Moves(getRidOfComments(movefile));
         }
         // jdzffhwilauhfjauwgtaeryufgaeyugtsfyjavergfyWGFYUDWGURywfgeuy4rgdILQg3rulF2,3
@@ -147,21 +148,24 @@ public class FairyChess {
         }
         // this is for when there is no boardfile
         if (args.length == 0) {
-
-            if (allocation) {
+        	// custom starting line-ups are allowed (like having 4 bishops), this is the selection menu for that
+            if (isNotAllocatedYet) {
                 GuiAllocation();
-                allocation = false;
+                isNotAllocatedYet = false;
             }
 
         }
 
-        // just for now
-
+        // the program was made to run without a GUI (as a full game is played out from the instructions
+        // in the move file and the end game state is compared to the expected output). I have made a GUI
+        // for this after the fact. To make a fully functional Chess game to better show-case my
+        // back-end.
+        
         while (true) {
             
             GuiOutPut(piecesBoard);
 
-            GuiMove(piecesBoard);
+            GuiGetMove(piecesBoard);
 
             Move thisMove = new Move(moveMove, movesrank, movesfile, movedrank, movedfile);
 
@@ -170,7 +174,8 @@ public class FairyChess {
             int line = 1;
             // moves null check
 
-            // board null check
+            // board null check and Error throw
+            //TODO: Implement GUI Error throws
             if (piecesBoard[move.srank][move.sfile] == null) {
                 if (move.getMove().equals("MOVE")) {
 
@@ -183,18 +188,19 @@ public class FairyChess {
                 // Checking moves
             }
             if (move.getMove().equals("MOVE") && !move.getAffect().equals("PROMOTION")) {
-
+            		// moveCheck returns false for illegal moves, so !bla.moveCheck is used to trigger the "if" statement
                 if (!piecesBoard[move.srank][move.sfile].moveCheck(piecesBoard, move, playerTurn, movesCounter)) {
                     MoveValidationErrors.illegalMove(line);
                 }
+                // affects move
                 piecesBoard[move.srank][move.sfile].Move(piecesBoard, move, playerTurn, movesCounter,
                         castlingOpportunities);
             }
-
             if (move.getMove().equals("CAPTURE") && !move.getAffect().equals("PROMOTION")) {
                 if (!piecesBoard[move.srank][move.sfile].captureCheck(piecesBoard, move, playerTurn, movesCounter)) {
                     MoveValidationErrors.illegalCapture(line);
                 }
+             // affects move
                 piecesBoard[move.srank][move.sfile].Move(piecesBoard, move, playerTurn, movesCounter,
                         castlingOpportunities);
             }
@@ -268,10 +274,11 @@ public class FairyChess {
             }
             castle(piecesBoard, move);
 
+            // TODO: guess I still need to finish King related checks....... and Implement King related checks in all "Pieces"
+            
             // if not left in check call illegalCheck
             // if(move.getCheck()){
-            // if (!PathingChecks.isInCheck(piecesBoard, playerTurn,
-            // movesCounter)) {
+            // if (!PathingChecks.isInCheck(piecesBoard, playerTurn, movesCounter)) {
             // MoveValidationErrors.illegalCheck(line);
             // }
             // }
@@ -285,19 +292,17 @@ public class FairyChess {
 
     }
 
+    // responsible for redrawing the current game state
     public static void GuiOutPut(Piece[][] piecesBoard) {
         if (playerTurn) {
             StdDraw.picture(5, 5, "WhiteTurn.JPG", 10, 10);
         } else {
             StdDraw.picture(5, 5, "BlackTurn.JPG", 10, 10);
         }
-        StdDraw.setPenColor(StdDraw.BLACK);
-        Font bigfont = new Font("Arial", Font.BOLD, 50);
-        StdDraw.setFont(bigfont);
-
+        
         double x = 1.75;
         double y = 0;
-
+        
         for (int i = 0; i < 10; i++) {
             y = -0.3;
             x = x + 0.59;
@@ -311,7 +316,8 @@ public class FairyChess {
 
         StdDraw.show();
     }
-
+    
+    // animations looks kinda ugly, but this took so long to make. I'll replace it last
     public static void animation() {
         StdDraw.setXscale(0, 10);
         StdDraw.setYscale(0, 10);
@@ -330,7 +336,7 @@ public class FairyChess {
         for (int k = 0; k < 10; k++) {
             randomc[k] = (Math.random() * 2.5);
         }
-
+        // how cool does this look? Right
         for (double i = 0; i < 18; i = i + 0.03) {
 
             StdDraw.setPenColor(StdDraw.RED);
@@ -396,8 +402,9 @@ public class FairyChess {
         }
 
     }
-
-    public static void GuiMove(Piece[][] piecesBoard) {
+    
+    // GuiMove is used to select a piece to be moved. And a destination to be selected.
+    public static void GuiGetMove(Piece[][] piecesBoard) {
         moveMove = "";
         moveAffect = "";
         movesrank = -1;
@@ -406,17 +413,19 @@ public class FairyChess {
         movedfile = -1;
         StdDraw.setXscale(0, 10);
         StdDraw.setYscale(0, 10);
-        boolean done = true;
-        boolean spiece = true;
-        boolean dpiece = true;
-        while (done) {
-
-            while (spiece) {
+        boolean notDone = true;
+        boolean sourcePiece = true;
+        boolean destinationPiece = true;
+        while (notDone) {
+        	// TODO: Should probably add some highlighting to indicate a selection has occurred
+            while (sourcePiece) {
+            	// making buttons with StdDraw is PAIN
                 if (StdDraw.isMousePressed()) {
                     if (StdDraw.mouseY() < 10.0 && StdDraw.mouseY() > 9.0) {
                         movesrank = 0;
                         while (StdDraw.isMousePressed()) {
-                            // do nothing
+                            // do nothing || this exists because without it isMousePressed() spams an
+                        	// impressive amount of inputs. This exits the while loops upon de-pressing the mouse
                         }
                     }
                     if (StdDraw.mouseY() < 9.0 && StdDraw.mouseY() > 8.0) {
@@ -538,7 +547,7 @@ public class FairyChess {
                 if (movesrank != -1 && movesfile != -1) {
                     if (piecesBoard[movesrank][movesfile] != null) {
                         if (piecesBoard[movesrank][movesfile].player == playerTurn) {
-                            spiece = false;
+                            sourcePiece = false; // breaks the while loop after selection of piece to be moved is done
                             break;
                         }
                     }
@@ -546,12 +555,12 @@ public class FairyChess {
                 
             }
 
-            while (dpiece) {
+            while (destinationPiece) {
                 if (StdDraw.isMousePressed()) {
                     if (StdDraw.mouseY() < 10.0 && StdDraw.mouseY() > 9.0) {
                         movedrank = 0;
                         while (StdDraw.isMousePressed()) {
-                            // do nothing
+                            // do nothing || dealing with spammy inputs
                         }
                     }
                     if (StdDraw.mouseY() < 9.0 && StdDraw.mouseY() > 8.0) {
@@ -673,19 +682,19 @@ public class FairyChess {
                 if (movedrank != -1 && movedfile != -1) {
                     if (piecesBoard[movedrank][movedfile] == null) {
                         moveMove = "MOVE";
-                        dpiece = false;
+                        destinationPiece = false;
                         break;
                     } else if (piecesBoard[movesrank][movesfile].player != playerTurn) {
                         moveMove = "CAPTURE";
-                        dpiece = false;
+                        destinationPiece = false;
                         break;
                     }
                 }
-                
+                // We deal with illegal moves elsewhere (In the "Pieces" themselves), we just make the "moveMove"/"moveCaptue" part of the move object here
 
             }
-            if (!spiece && !dpiece) {
-                done = false;
+            if (!sourcePiece && !destinationPiece) {
+                notDone = false;
                 break;
             }
         }
@@ -695,6 +704,7 @@ public class FairyChess {
         boolean done = true;
         boolean[] pawn = new boolean[10];
         int[] officers = { 1, 3, 4, 2, 2, 0, 2, 4, 3, 1 };
+        // displays allocation selection until a confirmation is made of the choices
         while (done) {
             StdDraw.picture(5, 5, "allocation.jpg", 11, 11);
             for (int i = 0; i < 10; i++) {
@@ -758,7 +768,7 @@ public class FairyChess {
                         }
                         selection = false;
                         while (StdDraw.isMousePressed()) {
-                            // do nothing
+                            // do nothing || Spammy inputs (Why this exists)
                         }
                     }
                     if (StdDraw.mouseX() > 7.1 && StdDraw.mouseX() < 8.0 && StdDraw.isMousePressed()) {
@@ -994,7 +1004,7 @@ public class FairyChess {
     }
 
     public static void terminalOutPut(String[] boardfile, Piece[][] piecesBoard) {
-        // print out stage 1
+        // print out stage 1 (used in grading)
         int a = 0;
         while (true) {
             String line = boardfile[a];
@@ -1013,7 +1023,7 @@ public class FairyChess {
             a++;
         }
         System.out.println("-----");
-        // print out stage 2
+        // print out stage 2 (used in grading)
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 if (piecesBoard[i][j] != null) {
@@ -1028,7 +1038,7 @@ public class FairyChess {
             System.out.println();
         }
         System.out.println("-----");
-        // print out stage 3
+        // print out stage 3 (used in grading). Pretty useful for making save files though
         if (playerTurn) {
             System.out.print("w");
         } else {
@@ -1165,6 +1175,7 @@ public class FairyChess {
 
     }
 
+    //why does this exist? Maybe it was used to debug in early development
     public static int additions(String[] movefile) {
         int additions = 0;
         for (int i = 0; i < movefile.length; i++) {
@@ -1210,6 +1221,7 @@ public class FairyChess {
             boardfile[i] = newline;
             i++;
         }
+        boardScanner.close();
         return boardfile;
     }
 

@@ -39,12 +39,13 @@ public abstract class Piece {
     }
 
     public boolean promotionCheck(Piece[][] piecesBoard, Move move, boolean playerTurn, int[] movesCounter) {
+    	// Pawns and Drunken soldiers are "not officers", i.e. pawn.offiecr = false.
+    	//And are the only pieces eligible for promotion.
         if (officer) {
             return false;
         }
         if (move.getMove().equals("MOVE")) {
             if (!piecesBoard[move.srank][move.sfile].moveCheck(piecesBoard, move, playerTurn, movesCounter)) {
-
                 return false;
             }
         }
